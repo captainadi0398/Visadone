@@ -41,7 +41,7 @@ class FormsController extends Controller
 
     public function getFields_visa($type, $country1, Request $request, $id, $count)
     {
-        // dd($request);
+
         $data['json'] = [];
         $requesting_files = [];
 
@@ -174,6 +174,7 @@ class FormsController extends Controller
 
         $data_response_array = unserialize(base64_decode(session('processedDataArray')));
         $data['json'] = $data_response_array;
+        // dd($data['results'][1]['files_mapping']);
         return view("Dynamic_form.forms_country", $data);
     }
 
@@ -182,8 +183,6 @@ class FormsController extends Controller
     public function getDocuments_visa($type, $country, Request $request, $id, $count, $data_response)
     {
         $data_response_array = unserialize(base64_decode($data_response));
-
-        // dd($data_response_array);
 
 
         $visa_data = DB::table('visa_data')->where('id', $id)->get();
@@ -221,95 +220,40 @@ class FormsController extends Controller
         foreach ($documents_needed as $document) {
             $documents = [
                 'document_name' => $document->document_name,
-
                 // Add more fields as needed
             ];
             $documents_array[] = $documents;
         }
 
 
-
-        $processedDataArray = [];
         // dd($data_response_array);
+        $processedDataArray = [];
+
         foreach ($data_response_array as $data) {
             $jsonString = $data->original;
             $arrayData = json_decode($jsonString, true);
 
 
+
             $data = $arrayData;
 
-            $table = null; // Initialize the variable
-
-            // Loop through the data to find the 'table' key
-            foreach ($data['data'] as $item) {
-                if (isset($item['table'])) {
-                    $table = $item['table'];
-                    break; // Exit the loop once 'table' is found
-                }
-            }
-
-            // You can now access the 'table' value here
-
-
-            // Similarly, you can handle other fields dynamically
-            $Code = null;
-            $Passport_Number = null;
-            $Surname = null;
-            $First_Name = null;
-            $Nationality = null;
-            $Sex = null;
-            $Date_of_Birth = null;
-            $Place_of_birth = null;
-            $Authority = null;
-            $Date_of_Issue = null;
-            $Date_of_expiry = null;
-            $MRZ = null;
-
-            // Loop through the data to extract other fields dynamically
-            foreach ($data['data'] as $item) {
-                if (isset($item['Code'])) {
-                    $Code = $item['Code'];
-                } elseif (isset($item['Passport_Number'])) {
-                    $Passport_Number = $item['Passport_Number'];
-                } elseif (isset($item['Surname'])) {
-                    $Surname = $item['Surname'];
-                } elseif (isset($item['First_Name'])) {
-                    $First_Name = $item['First_Name'];
-                } elseif (isset($item['Nationality'])) {
-                    $Nationality = $item['Nationality'];
-                } elseif (isset($item['Sex'])) {
-                    $Sex = $item['Sex'];
-                } elseif (isset($item['Date_of_Birth'])) {
-                    $Date_of_Birth = $item['Date_of_Birth'];
-                } elseif (isset($item['Place_of_birth'])) {
-                    $Place_of_birth = $item['Place_of_birth'];
-                } elseif (isset($item['Authority'])) {
-                    $Authority = $item['Authority'];
-                } elseif (isset($item['Date_of_Issue'])) {
-                    $Date_of_Issue = $item['Date_of_Issue'];
-                } elseif (isset($item['Date_of_expiry'])) {
-                    $Date_of_expiry = $item['Date_of_expiry'];
-                } elseif (isset($item['MRZ'])) {
-                    $MRZ = $item['MRZ'];
-                }
-            }
+            $Code = isset($data['data'][0]['Code']) ? $data['data'][0]['Code'] : null;
+            $Passport_Number = isset($data['data'][1]['Passport_Number']) ? $data['data'][1]['Passport_Number'] : null;
+            $Surname = isset($data['data'][2]['Surname']) ? $data['data'][2]['Surname'] : null;
+            $First_Name = isset($data['data'][3]['First_Name']) ? $data['data'][3]['First_Name'] : null;
+            $Nationality = isset($data['data'][4]['Nationality']) ? $data['data'][4]['Nationality'] : null;
+            $Sex = isset($data['data'][5]['Sex']) ? $data['data'][5]['Sex'] : null;
+            $Date_of_Birth = isset($data['data'][6]['Date_of_Birth']) ? $data['data'][6]['Date_of_Birth'] : null;
+            $Place_of_birth = isset($data['data'][7]['Place_of_birth']) ? $data['data'][7]['Place_of_birth'] : null;
+            $Authority = isset($data['data'][8]['Authority']) ? $data['data'][8]['Authority'] : null;
+            $Date_of_Issue = isset($data['data'][9]['Date_of_Issue']) ? $data['data'][9]['Date_of_Issue'] : null;
+            $Date_of_expiry = isset($data['data'][10]['Date_of_expiry']) ? $data['data'][10]['Date_of_expiry'] : null;
+            $MRZ = isset($data['data'][11]['MRZ']) ? $data['data'][11]['MRZ'] : null;
+            $table = isset($data['data'][12]['table']) ? $data['data'][12]['table'] : null;
 
 
-            // $Code = isset($data['data'][0]['Code']) ? $data['data'][0]['Code'] : null;
-            // $Passport_Number = isset($data['data'][1]['Passport_Number']) ? $data['data'][1]['Passport_Number'] : null;
-            // $Surname = isset($data['data'][2]['Surname']) ? $data['data'][2]['Surname'] : null;
-            // $First_Name = isset($data['data'][3]['First_Name']) ? $data['data'][3]['First_Name'] : null;
-            // $Nationality = isset($data['data'][4]['Nationality']) ? $data['data'][4]['Nationality'] : null;
-            // $Sex = isset($data['data'][5]['Sex']) ? $data['data'][5]['Sex'] : null;
-            // $Date_of_Birth = isset($data['data'][6]['Date_of_Birth']) ? $data['data'][6]['Date_of_Birth'] : null;
-            // $Place_of_birth = isset($data['data'][7]['Place_of_birth']) ? $data['data'][7]['Place_of_birth'] : null;
-            // $Authority = isset($data['data'][8]['Authority']) ? $data['data'][8]['Authority'] : null;
-            // $Date_of_Issue = isset($data['data'][9]['Date_of_Issue']) ? $data['data'][9]['Date_of_Issue'] : null;
-            // $Date_of_expiry = isset($data['data'][10]['Date_of_expiry']) ? $data['data'][10]['Date_of_expiry'] : null;
-            // $MRZ = isset($data['data'][11]['MRZ']) ? $data['data'][11]['MRZ'] : null;
-            // $table = isset($data['data'][12]['table']) ? $data['data'][12]['table'] : null;
 
-
+            // Fetch data from the database based on the country
             $data['data'] = DB::table('forms_data')->where('country', $country)->where('visa_type', $type)->get();
             $data['country'] = DB::table('country_info')->get();
             $data['country_name'] = $country;
@@ -340,12 +284,17 @@ class FormsController extends Controller
                 }
             }
 
-            if ($First_Name != 'First_Name' &&  $Surname != 'Surname') {
-                $processedDataArray[] = $data;
-            }
+
+
+
+            $processedDataArray[] = $data;
         }
 
+        //     $data['final_json']=$processedDataArray;
 
+        // $data_final = array($commonVisaData, $processedDataArray);
+
+        // $data_final = array_merge($commonVisaData,$data['final_json']);
         $data['final_json'] = $processedDataArray;
 
         $data_final = [
@@ -360,10 +309,10 @@ class FormsController extends Controller
             'processedDataArray' => $encodedData,
         ]);
 
-        // dd($data_final);
+
 
         return view("visa.document_list_visa", $data_final);
-
+        // return view("visa.document_list_visa", ['data_final' => $data_final]);
 
     }
 

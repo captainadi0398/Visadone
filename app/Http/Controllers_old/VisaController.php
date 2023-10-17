@@ -148,7 +148,10 @@ class VisaController extends Controller
 
     public function store(Request $request)
     {
-
+        // $request->validate([
+        //     $request->documents_name => 'max:5120', // 1 MB in kilobytes
+        // ]);
+        // dd($request->dataFile);
         if ($request->has('offer_secrate_field') && $request->input('offer_secrate_field') === null) {
             return redirect()->back()->with('message', 'The Offer is not Selected.');
         }
@@ -172,7 +175,7 @@ class VisaController extends Controller
 
             $user->save(); // Save Data in Visa_data table  Files are remaining.
 
-            if (empty($request->dataFile)) {
+            if (empty($request->dataFile)){
                 return redirect()->back()->with('message', 'Documents Not Uploaded');
             }
 
@@ -184,50 +187,48 @@ class VisaController extends Controller
             $response_json = [];
             // foreach ($files_name as $data) {
             $fileCount = count($request->dataFile);
+            //     // print_r($fileCount);
+            // if ($request->hasFile($data)) {
+
+                foreach ($request->dataFile as $file) {
+
+                    $originalName = $file->getClientOriginalName();
+                    $mimeType = $file->getClientMimeType();
+                    $error = $file->getError();
+                    $randomString = Str::random(6);
+                    $newFileName = 'VISA_' . $id . '_' . $randomString . '.' . $file->getClientOriginalExtension();
 
 
-            foreach ($request->dataFile as $file) {
-
-                $originalName = $file->getClientOriginalName();
-                $mimeType = $file->getClientMimeType();
-                $error = $file->getError();
-                $randomString = Str::random(6);
-                $newFileName = 'VISA_' . $id . '_' . $randomString . '.' . $file->getClientOriginalExtension();
+                    // // Store the file in the storage/app/public directory with the new filename
+                    // // The 'public' disk is configured to point to storage/app/public
+                    $path = $file->storeAs('public/documents/' . $id . '/', $newFileName);
 
 
-                // // Store the file in the storage/app/public directory with the new filename
-                // // The 'public' disk is configured to point to storage/app/public
-                $path = $file->storeAs('public/documents/' . $id . '/', $newFileName);
+                    $filesSaved[] = [
+                        'originalName' => $originalName,
+                        'mimeType' => $mimeType,
+                        'newFileName' => $newFileName,
+                        'path' => $path,
+                        'visa_id' => $id,
+                    ];
 
+                    $object1 = new OCRController();
+                    // $imgurl = "https://carsinafrica.in/img/sheetal_passport.jpg";
+                    $imgurl = $originalName;
+                    $data_response = $object1->yourControllerFunction($imgurl);
+                    // $data_response = str_replace('\\', '', $data_response);
+                    // dd($data_response);
+                    // Using OCR response Store the Values
+                    $data_valid = json_encode($data_response);
+                    $offer_id = $request->offer_secrate_field;
 
-                $filesSaved[] = [
-                    'originalName' => $originalName,
-                    'mimeType' => $mimeType,
-                    'newFileName' => $newFileName,
-                    'path' => $path,
-                    'visa_id' => $id,
-                ];
-
-                $object1 = new OCRController();
-                // $imgurl = "https://carsinafrica.in/img/sheetal_passport.jpg";
-                $imgurl = $originalName;
-                $data_response = $object1->yourControllerFunction($imgurl);
-                // $data_response = str_replace('\\', '', $data_response);
-
-                // Using OCR response Store the Values
-                $data_valid = json_encode($data_response);
-                $offer_id = $request->offer_secrate_field;
-
-
-                if ($data_valid !== 'null') {
-                    $responses = $object1->OCR_data_response($id, $data_valid, $newFileName, $offer_id);
+                    $responses = $object1->OCR_data_response($id, $data_valid,$newFileName,$offer_id);
                     $responseData = $responses->getData();
                     // dd(empty($responseData));
                     $response_json[] = $responses;
                 }
-            }
-            // }
-            // }
+                // }
+                // }
 
 
 
@@ -242,15 +243,13 @@ class VisaController extends Controller
 
             // OCR END
             $data_response_array = (array) $response_json;
-            $count = count($data_response_array);
-
             $destination = $request->destination;
-            // dd($data_response_array);
+
             $encoded_data_response = base64_encode(serialize($data_response_array));
-
+            // dd($encoded_data_response);
             // Merge the array with the 'destination' parameter
-            $parameters = array_merge(['destination' => $destination, 'type' => $visa_type, 'id' => $id, 'count' => $count, 'data_response' => $encoded_data_response]);
-
+            $parameters = array_merge(['destination' => $destination, 'type' => $visa_type, 'id' => $id, 'count' => $fileCount, 'data_response' => $encoded_data_response]);
+            // dd($parameters);
             // Redirect with the merged parameters
             return redirect()->route('getDocument_visa', $parameters);
         } catch (\Exception $e) {

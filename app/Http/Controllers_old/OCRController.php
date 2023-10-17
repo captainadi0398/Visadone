@@ -59,8 +59,8 @@ class OCRController extends Controller
     {
         $image_url = $img_url;
 
-        $ocr_model_id = "74dc6c2d-6128-49ff-9cb5-162587e86d81";
-        $api_key = '6b39d38d-26c7-11ee-8e3a-9e6e7f420d19'; // Replace with your API key
+        $ocr_model_id = "dcc24153-7930-41d9-874b-03d5879a562a";
+        $api_key = 'a534d407-222b-11ee-9be8-f20ad52326ad'; // Replace with your API key
 
         $base_url = 'https://app.nanonets.com/api/v2/OCR/Model/';
         $url = $base_url . $ocr_model_id . '/LabelUrls/';
@@ -77,7 +77,25 @@ class OCRController extends Controller
         ];
 
 
+        // Image using URL
+        // try {
+        //     $response = $client->request('POST', $url, [
+        //         'auth' => [$username, $password],  // Basic Authentication
+        //         'headers' => [
+        //             'Accept' => 'application/x-www-form-urlencoded',
+        //             'Content-Type' => 'application/x-www-form-urlencoded',
+        //             // Add any additional headers you need
+        //         ],
+        //         'form_params' => $payload,  // Send the payload as x-www-form-urlencoded data
+        //     ]);
 
+        //     $responseData = json_decode($response->getBody(), true);
+        //     return response()->json($responseData);
+        //     // Handle the response data as needed
+        // } catch (\Exception $e) {
+        //     // Handle the error if the request fails
+        //     return response()->json(['error' => $e->getMessage()], 500);
+        // }
 
 
         //Image using path from download
@@ -98,34 +116,18 @@ class OCRController extends Controller
                 ],
             ]);
 
-            // Assuming $response is a Guzzle HTTP response object
-            $body = $response->getBody(); // Get the response body
-            $jsonData = $body->getContents(); // Get the JSON data as a string
-
-            // Decode the JSON data into a PHP array
-            $dataArray = json_decode($jsonData, true);
-
-            // Check if the 'prediction' property is an empty array
-            if (empty($dataArray['result'][0]['prediction']) || count($dataArray['result'][0]['prediction']) <= 2){
-                // The 'prediction' property is an empty array
-                $responseData = null;
-            } else {
-                // The 'prediction' property is not empty
-
-                $responseData = json_decode($response->getBody(), true);
-            }
-
-
+            $responseData = json_decode($response->getBody(), true);
+            // dd($responseData);
             return $responseData;
             // Handle the response data as needed
         } catch (\Exception $e) {
             // Handle the error if the request fails
-            // dd($e);
+            dd($e);
             return ['error' => $e->getMessage()];
         }
     }
 
-    public function OCR_data_response($id, $response, $filename, $visa_id)
+    public function OCR_data_response($id, $response,$filename,$visa_id)
     {
         $document_data = DB::table('document_rule_data')->where('offer_id', 'LIKE', '%' . $visa_id . '%')->get();
 
@@ -162,12 +164,11 @@ class OCRController extends Controller
 
 
         foreach ($responseData['result'][0]['prediction'] as $prediction) {
-            // foreach ($responseData['result'][0]['prediction'] as $prediction) {
+        // foreach ($responseData['result'][0]['prediction'] as $prediction) {
             $predictionData = $prediction['label'];
             $predictionData_value = $prediction['ocr_text'];
             $predictionData_value = stripslashes($predictionData_value);
 
-            echo "PredictionData: $predictionData, PredictionData_value: $predictionData_value<br>";
 
             $JSON_final['data'][] = [
                 $predictionData => $predictionData_value,
@@ -198,6 +199,8 @@ class OCRController extends Controller
             } else if ($predictionData === 'Place_of_birth') {
                 $place_of_birth = $predictionData_value;
             }
+
+
         }
         $JSON_final['document_name'] = $document_data[0]->document_name;
         $JSON_final['document_file'] = $filename;
@@ -223,10 +226,10 @@ class OCRController extends Controller
             'date_of_expire' => $date_of_expire,
             'MRZ' => $MRZ,
             'application_JSON' => $jsonData,
+
         ]);
 
         // Encode the $JSON_final array as a JSON string without white spaces
-        // dd($JSON_final);
         $jsonResponse = json_encode($JSON_final, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         // Check if JSON encoding was successful

@@ -94,7 +94,7 @@ class DocumentRuleController extends Controller
 
     public function store(Request $request)
     {
-
+        // dd($request);
         try {
             $group_array = collect($request->offer_id)->implode(',');
             $id = DocumentRules::create([
@@ -109,21 +109,9 @@ class DocumentRuleController extends Controller
 
             $user->document_needed = $request->document_mandatory;
             $user->document_description = $request->message;
-            $user->visa_type = $request->document_requirements;
+            $user->visa_type = $request->document_requiredments;
 
             $user->save();
-
-            if($request->document_requirements == 'conditionally'){
-
-                DB::table('document_conditional_data')->insert([
-                    'id_doc' => $id,
-                    'description' => $request->condition_description ,
-                    'key_value' => $request->condition_Key,
-                    'operator' => $request->condition_operator,
-                    'value' => $request->condition_value,
-                ]);
-
-            }
 
             $data['success'] = "1";
             $data['message'] = "Offer Created";

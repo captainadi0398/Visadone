@@ -38,7 +38,7 @@ Route::get('/getfields_status_enable/{selectedIds}', 'App\Http\Controllers\Forms
 
 Route::get('/getcurrency/{country}', 'App\Http\Controllers\OfferController@getcurrency');
 Route::get('/getnation/{offer_id}', 'App\Http\Controllers\OfferController@getnation');
-Route::post('/updatenation/{id}/{offer_id}', 'App\Http\Controllers\OfferController@update_country');
+Route::post('/updatenation/{offer_id}/{nation}', 'App\Http\Controllers\OfferController@update_country');
 
 
 Route::get('/document/{nationality}/{destination}', 'App\Http\Controllers\FrontEndController@getOffer_json');
@@ -60,8 +60,6 @@ Route::get('/getbranches/{country}', 'App\Http\Controllers\FrontEndController@ge
 Route::get('/getagency/{country}/{branch}', 'App\Http\Controllers\FrontEndController@getagency');
 
 Route::get('/getexport', 'App\Http\Controllers\OfferController@exportData');
-Route::get('/offerdetails/{id}/{user_id}', 'App\Http\Controllers\FrontEndController@getofferjson');
-
 
 
 

@@ -253,27 +253,12 @@ class OfferController extends Controller
     }
 
 
-    public function update_country(Request $request, $id, $offer_id)
+    public function update_country(Request $request, $id, $nation)
     {
         // dd($request);
-        $currentOfferId = DB::table('document_rule_data')->where('id', $id)->value('offer_id');
-        try {
-            if ($currentOfferId === null || !strpos($currentOfferId, $offer_id)) {
-                // Combine the currentOfferId and the new offer_id with a separator (e.g., comma)
-                $combinedOfferId = $currentOfferId ? $currentOfferId . ',' . $offer_id : $offer_id;
-
-                // Update the record with the combined offer_id
-                DB::table('document_rule_data')->where('id', $id)->update(['offer_id' => $combinedOfferId]);
-            }
-
-            $data['data'] = "Updated Successfully";
-            return response()->json($data);
-        } catch (\Exception $e) {
-            $data['data'] = $e;
-            return response()->json($data);
-        }
-        // Check if the currentOfferId contains the new offer_id
-
+        VisaOffers::where('id', $id)->update(['nationality' => $nation]);
+        $data['data'] = "Updated Successfully";
+        return response()->json($data);
     }
 
 
