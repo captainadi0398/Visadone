@@ -8,7 +8,6 @@ use App\Models\VisaOffers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Session;
 
 
 class FrontEndController extends Controller
@@ -35,6 +34,7 @@ class FrontEndController extends Controller
                 $data['success'] = "0";
                 $data['message'] = implode(", ", $errors->all());
                 $data['userinfo'] = "";
+
             } else {
 
                 $id = Users::create(['first_name' => $request->first_name . " " . $request->last_name, 'email' => $request->email, 'password' => bcrypt($request->password), 'user_type' => 'C', 'status' => 1])->id;
@@ -52,6 +52,7 @@ class FrontEndController extends Controller
                 $data['success'] = "1";
                 $data['message'] = "You have Registered Successfully!";
                 $data['userinfo'] = array('user_id' => "$user->id", 'api_token' => $user->api_token, 'user_name' => $user->first_name . " " . $user->last_name, 'mobno' => $user->mobile_number, 'emailid' => $user->email, 'country' => "$user->country", 'password' => $user->password, 'status' => "$user->status", 'timestamp' => date('Y-m-d H:i:s', strtotime($user->created_at)), 'Country of Residences' => $user->country);
+
             }
 
             $data1 = array('name' => "Cars In Africa");
@@ -64,6 +65,7 @@ class FrontEndController extends Controller
             // $obj->basic_email($to, $name, $message);
 
             return response()->json($data);
+
         } catch (\Exception $e) {
             //if Exception Happens 500 Error.
             $data['success'] = "0";
@@ -71,6 +73,7 @@ class FrontEndController extends Controller
             $data['userinfo'] = "null";
             return response()->json($data);
         }
+
     }
 
     public function user_login(Request $request)
@@ -114,8 +117,9 @@ class FrontEndController extends Controller
             // $data['offerinfo'] = $data['offers'];
             $data = VisaOffers::where('nationality', 'LIKE', '%' . $nationality . '%')
                 ->where('destination', 'LIKE', '%' . $destination . '%')
-                ->where('entry_fees', 'single_entry')
+                ->where('entry_fees','single_entry')
                 ->get();
+
         } catch (\Exception $e) {
             // dd($e);
             $data['success'] = "0";
@@ -131,6 +135,7 @@ class FrontEndController extends Controller
         try {
 
             $data = DocumentRules::where('offer_id', 'like', '%' . $id . '%')->get();
+
         } catch (\Exception $e) {
             // dd($e);
             $data['success'] = "0";
@@ -146,11 +151,6 @@ class FrontEndController extends Controller
         try {
             $data = DocumentRules::where('offer_id', 'like', '%' . $id . '%')->get();
 
-            // $data = DocumentRules::join('document_conditional_data', 'document_conditional_data.id_doc', '=', 'document_rule_data.id')
-            //     ->where('document_rule_data.offer_id', 'like', '%' . $id . '%')
-            //     ->get();
-
-
         } catch (\Exception $e) {
             $data = "Internal Server Error";
         }
@@ -163,13 +163,11 @@ class FrontEndController extends Controller
 
         try {
 
-            $id = DocumentRules::create([
-                'nationality' => $request->nationality,
+            $id = DocumentRules::create(['nationality' => $request->nationality,
                 'destination' => $request->destination,
                 'offer_id' => $request->offer_id,
                 'document_type' => $request->document_type,
-                'document_name' => $request0->document_name
-            ])->id;
+                'document_name' => $request0->document_name])->id;
 
             $user = DocumentRules::find($id);
 
@@ -189,12 +187,14 @@ class FrontEndController extends Controller
                 'Visa Validity' => $request->visa_validity,
                 'offer_id' => $id,
             ];
+
         } catch (\Expection $e) {
             // dd($e);
             // return view("layout.500");
             $data['success'] = "0";
             $data['message'] = "Offer not Created!";
             $data['offerinfo'] = [];
+
         }
         return $data;
     }
@@ -238,18 +238,23 @@ class FrontEndController extends Controller
             $data['success'] = "0";
             $data['message'] = "Offer not Created!";
             $data['offerinfo'] = [];
+
         }
+
     }
 
     public function getOffer_json($nationality, $destination)
     {
         try {
-
+            // $data['success'] = "1";
+            // $data['message'] = "Offers List";
+            // $data['offerinfo'] = $data['offers'];
             $data = DocumentRules::join('visa_offer_data', 'visa_offer_data.id', '=', 'document_rule_data.offer_id')
-                ->select('visa_offer_data.id as vid', 'document_rule_data.*')
+            ->select('visa_offer_data.id as vid','document_rule_data.*')
                 ->where('document_rule_data.nationality', 'LIKE', '%' . $nationality . '%')
                 ->where('document_rule_data.destination', 'LIKE', '%' . $destination . '%')
                 ->get();
+
         } catch (\Exception $e) {
             // dd($e);
             $data['success'] = "0";
@@ -310,11 +315,12 @@ class FrontEndController extends Controller
         }
 
         return response()->json($jsonArray);
+
+
     }
 
-    public function createnationJson($destination)
-    {
-        $data = DB::table('visa_offer_data')->where('destination', $destination)->get();
+    public function createnationJson($destination){
+        $data = DB::table('visa_offer_data')->where('destination',$destination)->get();
         return response()->json($data);
     }
 
@@ -360,70 +366,13 @@ class FrontEndController extends Controller
 
 
 
-    public function getbranches($country)
-    {
-        $data = DB::table('branches')->where('country_name', $country)->get();
+    public function getbranches($country){
+        $data = DB::table('branches')->where('country_name',$country)->get();
         return response()->json($data);
     }
 
-    public function getagency($country, $branch)
-    {
-        $data = DB::table('agency_data')->where('country', $country)->orWhere('branch_name', $branch)->get();
+    public function getagency($country,$branch){
+        $data = DB::table('agency_data')->where('country',$country)->orWhere('branch_name',$branch)->get();
         return response()->json($data);
-    }
-    public function getofferjson($id, $user_id)
-    {
-        $currency = DB::table('users')->where('id', $user_id)->get();
-
-        if ($currency[0]->user_type != 'S') {
-            $currency_rate = DB::table('currency_converter')->where('country_name', $currency[0]->country)->get();
-            $tax_rate = DB::table('tax_data')->where('country_name', $currency[0]->country)->get();
-
-            $data = DB::table('visa_offer_data')->where('id', $id)->get();
-
-            if (!$data->isEmpty()) {
-                $customData = [
-                    [
-                        'id' => $data[0]->id,
-                        'nationality' => $data[0]->nationality,
-                        'destination' => $data[0]->destination,
-                        "visa_type" => $data[0]->visa_type,
-                        "visa_category" =>  $data[0]->visa_category,
-                        "entry_fees" =>  $data[0]->entry_fees,
-                        "visa_description" =>  $data[0]->visa_description,
-                        "processing_time" =>  $data[0]->processing_time,
-                        "visa_validity" =>  $data[0]->visa_validity,
-                        "stay_validity" =>  $data[0]->stay_validity,
-                        "category" =>  $data[0]->category,
-                        "duration" =>  $data[0]->duration,
-                        "description" =>  $data[0]->description,
-                        "base_rate_adult" =>  $data[0]->base_rate_adult * $currency_rate[0]->country_rate,
-                        "base_rate_child" =>  $data[0]->base_rate_child,
-                        "base_rate_Infant" =>  $data[0]->base_rate_Infant,
-                        "govt_fees_adult" => $data[0]->govt_fees_adult,
-                        "govt_fees_child" =>  $data[0]->govt_fees_child,
-                        "govt_fees_infant" =>  $data[0]->govt_fees_infant,
-                        "currency_value" =>  $data[0]->currency_value,
-                        "status" =>  $data[0]->status,
-                        "created_at" =>  $data[0]->created_at,
-                        "updated_at" =>  $data[0]->updated_at,
-                        "deleted_at" =>  $data[0]->deleted_at,
-                        "currecny"=> $currency_rate[0]->country_rate,
-                        "currency_name" => $currency_rate[0]->country_currency,
-                        "tax_name"=> $tax_rate[0]->tax_name,
-                        "tax_percentage"=> $tax_rate[0]->tax_percentage,
-
-                    ]
-                ];
-
-                return response()->json($customData);
-            } else {
-                return response()->json(['error' => 'No data found for the provided ID']);
-            }
-        } else {
-            $data = DB::table('visa_offer_data')->where('id', $id)->get();
-
-            return response()->json($data);
-        }
     }
 }
